@@ -29,11 +29,14 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring.boot.version}</version>
-            </plugin>
+		<plugin>
+		  <groupId>org.springframework.boot</groupId>
+		  <artifactId>spring-boot-maven-plugin</artifactId>
+		  <version>${spring.boot.version}</version>
+		  <configuration>
+		    <mainClass>com.example.salesforecast.SalesForecastApplication</mainClass>
+		  </configuration>
+		</plugin>
         </plugins>
     </build>
 
