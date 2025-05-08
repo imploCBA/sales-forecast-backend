@@ -24,7 +24,7 @@
             <version>${spring.boot.version}</version>
         </dependency>
 
-        <!-- Прочие зависимости, если нужно -->
+        
     </dependencies>
 
 <build>
@@ -32,13 +32,18 @@
     <plugin>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-maven-plugin</artifactId>
-      <version>3.1.2</version> <!-- Или актуальная версия -->
       <configuration>
         <mainClass>com.example.salesforecast.SalesForecastApplication</mainClass>
       </configuration>
+      <executions>
+        <execution>
+          <goals>
+            <goal>repackage</goal>
+          </goals>
+        </execution>
+      </executions>
     </plugin>
   </plugins>
 </build>
-
 
 </project>
