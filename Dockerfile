@@ -1,19 +1,16 @@
-# Используем официальный образ OpenJDK
-FROM openjdk:17-jdk-slim
-
-# Устанавливаем рабочую директорию
+FROM maven:3.9.3-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# Копируем pom.xml и загружаем зависимости
-COPY pom.xml ./
-RUN apt-get update && apt-get install -y maven
-RUN mvn dependency:go-offline
-
-# Копируем остальные файлы проекта
-COPY . ./
-
-# Сборка проекта
+# Копируем всё и собираем проект
+COPY . .
 RUN mvn clean package -DskipTests
 
-# Запускаем приложение
-CMD ["java", "-jar", "target/sales-forecast-backend-0.0.1-SNAPSHOT.jar"]
+# Финальный образ для запуска
+FROM eclipse-temurin:17-jdk
+WORKDIR /app
+
+# Копируем jar-файл из предыдущего этапа
+COPY --from=build /app/target/*.jar app.jar
+
+# Запуск приложения
+CMD ["java", "-jar", "app.jar"]
