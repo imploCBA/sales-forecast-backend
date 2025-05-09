@@ -24,8 +24,18 @@ public class ForecastController {
             // Путь к Python-скрипту
             String scriptPath = "/app/scripts/forecast.py";
 
+	    System.out.println("Script path: " + scriptPath);
+	    System.out.println("Temp CSV path: " + tempFile.getAbsolutePath());
+
             // Запускаем скрипт, передаём путь к файлу
-            ProcessBuilder pb = new ProcessBuilder("/opt/venv/bin/python", scriptPath, tempFile.getAbsolutePath());
+            ProcessBuilder pb = new ProcessBuilder(
+		    "/opt/venv/bin/python",
+		    scriptPath,
+		    "--csv", tempFile.getAbsolutePath(),
+		    "--train-start", "2015",
+		    "--train-end", "2023",
+		    "--forecast-steps", "4"
+		);
             pb.redirectErrorStream(true);
             Process process = pb.start();
 
@@ -41,6 +51,7 @@ public class ForecastController {
             if (exitCode == 0) {
                 return ResponseEntity.ok(output.toString());
             } else {
+    		System.err.println("Возникла следующая ошибка при выполнении скрипта:\n" + output);
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Ошибка при выполнении скрипта.");
             }
