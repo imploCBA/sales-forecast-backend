@@ -9,8 +9,18 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jdk
 WORKDIR /app
 
-# Копируем jar-файл из предыдущего этапа
-COPY --from=build /app/target/*.jar app.jar
+# Устанавливаем Python и pip
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip && \
+    apt-get clean
 
-# Запуск приложения
+# Копируем JAR-файл и Python-скрипты
+COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/src/main/resources/scripts/forecast.py ./forecast.py
+
+# Устанавливаем Python-зависимости (если есть)
+COPY requirements.txt .
+RUN pip3 install -r requirements.txt
+
+# Запуск Spring Boot-приложения
 CMD ["java", "-jar", "app.jar"]
