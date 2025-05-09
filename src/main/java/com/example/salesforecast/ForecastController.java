@@ -1,3 +1,12 @@
+package com.example.salesforecast;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 @RestController
 @RequestMapping("/api")
 public class ForecastController {
@@ -5,20 +14,16 @@ public class ForecastController {
     @PostMapping("/forecast")
     public ResponseEntity<String> runForecast(@RequestBody ForecastRequest request) {
         try {
-            // Путь к скрипту
             String scriptPath = "src/main/resources/scripts/forecast.py";
 
-            // Параметры для скрипта
             String startDate = request.getStartDate();
             String endDate = request.getEndDate();
             String quarters = String.valueOf(request.getQuarters());
 
-            // Команда для выполнения
             ProcessBuilder pb = new ProcessBuilder("python3", scriptPath, startDate, endDate, quarters);
             pb.redirectErrorStream(true);
             Process process = pb.start();
 
-            // Чтение вывода скрипта
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             StringBuilder output = new StringBuilder();
             String line;
