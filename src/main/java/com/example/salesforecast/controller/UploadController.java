@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api2")
 @CrossOrigin(origins = "*") // Разрешаем CORS для фронтенда
 public class UploadController {
 
