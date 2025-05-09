@@ -27,9 +27,5 @@ RUN python3 -m venv /opt/venv && \
 COPY src/main/python/forecast.py /app/scripts/forecast.py
 COPY --from=build /app/target/*.jar app.jar
 
-# Устанавливаем Python-зависимости (если есть)
-COPY requirements.txt .
-RUN pip3 install -r requirements.txt
-
 # Запуск Spring Boot-приложения
 CMD ["java", "-jar", "app.jar"]
