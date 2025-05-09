@@ -54,7 +54,7 @@ public class ForecastController {
             } else {
     		System.err.println("Возникла следующая ошибка при выполнении скрипта:\n" + output);
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("Ошибка при выполнении скрипта.");
+                        .body("Ошибка при выполнении скрипта."+pathToAnswer+"\n" + output);
             }
 
         } catch (Exception e) {
