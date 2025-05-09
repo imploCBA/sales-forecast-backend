@@ -12,7 +12,7 @@ import java.io.InputStreamReader;
 public class ForecastController {
 
     @PostMapping("/forecast")
-    public ResponseEntity<String> runForecast(@RequestBody ForecastRequest request) {
+    public ResponseEntity<String> runForecast(@RequestParam("file") MultipartFile file) {
         try {
             String scriptPath = "/app/scripts/forecast.py";
 
