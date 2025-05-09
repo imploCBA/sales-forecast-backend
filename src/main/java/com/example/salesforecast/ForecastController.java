@@ -3,9 +3,9 @@ package com.example.salesforecast;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
 
 @RestController
 @RequestMapping("/api")
@@ -14,21 +14,24 @@ public class ForecastController {
     @PostMapping("/forecast")
     public ResponseEntity<String> runForecast(@RequestParam("file") MultipartFile file) {
         try {
+            // Сохраняем файл во временную директорию
+            File tempFile = File.createTempFile("uploaded-", ".csv");
+            file.transferTo(tempFile);
+
+            // Путь к Python-скрипту
             String scriptPath = "/app/scripts/forecast.py";
 
-            String startDate = request.getStartDate();
-            String endDate = request.getEndDate();
-            String quarters = String.valueOf(request.getQuarters());
-
-            ProcessBuilder pb = new ProcessBuilder("/opt/venv/bin/python", scriptPath, startDate, endDate, quarters);
+            // Запускаем скрипт, передаём путь к файлу
+            ProcessBuilder pb = new ProcessBuilder("/opt/venv/bin/python", scriptPath, tempFile.getAbsolutePath());
             pb.redirectErrorStream(true);
             Process process = pb.start();
 
+            // Читаем вывод скрипта
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             StringBuilder output = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
-                output.append(line);
+                output.append(line).append("\n");
             }
 
             int exitCode = process.waitFor();
@@ -38,6 +41,7 @@ public class ForecastController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Ошибка при выполнении скрипта.");
             }
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Исключение: " + e.getMessage());
