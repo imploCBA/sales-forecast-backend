@@ -26,6 +26,7 @@ public class ForecastController {
 
 	    System.out.println("Script path: " + scriptPath);
 	    System.out.println("Temp CSV path: " + tempFile.getAbsolutePath());
+	    String pathToAnswer = "Script path: " + scriptPath + "\n" + "Temp CSV path: " + tempFile.getAbsolutePath();
 
             // Запускаем скрипт, передаём путь к файлу
             ProcessBuilder pb = new ProcessBuilder(
