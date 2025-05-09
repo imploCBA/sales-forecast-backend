@@ -14,13 +14,13 @@ public class ForecastController {
     @PostMapping("/forecast")
     public ResponseEntity<String> runForecast(@RequestBody ForecastRequest request) {
         try {
-            String scriptPath = "src/main/resources/scripts/forecast.py";
+            String scriptPath = "/app/scripts/forecast.py";
 
             String startDate = request.getStartDate();
             String endDate = request.getEndDate();
             String quarters = String.valueOf(request.getQuarters());
 
-            ProcessBuilder pb = new ProcessBuilder("python3", scriptPath, startDate, endDate, quarters);
+            ProcessBuilder pb = new ProcessBuilder("/opt/venv/bin/python", scriptPath, startDate, endDate, quarters);
             pb.redirectErrorStream(true);
             Process process = pb.start();
 
