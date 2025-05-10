@@ -5,21 +5,24 @@ COPY . .
 RUN mvn clean package -DskipTests
 
 # --- СТАДИЯ 2: Финальный образ с Python и Java ---
-FROM eclipse-temurin:17-jdk AS runtime
+FROM eclipse-temurin:17-jdk-slim AS runtime
 WORKDIR /app
 
-# Устанавливаем Python и pip
+# Устанавливаем Python и необходимые зависимости
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip python3-venv --no-install-recommends && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends \
+        python3 python3-pip python3-venv \
+        build-essential libopenblas-dev liblapack-dev gfortran && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Копируем requirements.txt и ставим зависимости
+# Копируем requirements.txt
 COPY requirements.txt .
+
+# Устанавливаем Python-зависимости в виртуальное окружение
 RUN python3 -m venv /opt/venv && \
-    /opt/venv/bin/pip install --upgrade pip && \
-    /opt/venv/bin/pip install -r requirements.txt && \
-    rm -rf ~/.cache/pip
+    . /opt/venv/bin/activate && \
+    pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 ENV PATH="/opt/venv/bin:$PATH"
 
