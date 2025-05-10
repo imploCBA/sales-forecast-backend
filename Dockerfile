@@ -1,11 +1,11 @@
 # --- СТАДИЯ 1: Maven сборка jar-файла ---
-FROM maven:3.9.3-eclipse-temurin-17 AS build
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
 # --- СТАДИЯ 2: Финальный образ с Python и Java ---
-FROM eclipse-temurin:17-jdk-slim AS runtime
+FROM eclipse-temurin:17-jdk AS runtime
 WORKDIR /app
 
 # Устанавливаем Python и pip
