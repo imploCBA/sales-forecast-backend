@@ -1,31 +1,32 @@
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
 FROM maven:3.9.3-eclipse-temurin-17 AS build
 WORKDIR /app
-
-# Копируем всё и собираем проект
 COPY . .
 RUN mvn clean package -DskipTests
 
-# Финальный образ для запуска
-FROM eclipse-temurin:17-jdk
+
+# --- Финальный образ ---
+FROM eclipse-temurin:17-jdk-slim AS runtime
 WORKDIR /app
 
-# Устанавливаем Python и зависимости
+# Устанавливаем только необходимые пакеты для Python
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip python3-venv
+    apt-get install -y python3 python3-pip python3-venv --no-install-recommends && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Копируем requirements.txt
-COPY requirements.txt .
-
-# Создаём и активируем виртуальное окружение, затем устанавливаем зависимости
+# Установка зависимостей Python
 RUN python3 -m venv /opt/venv && \
-    . /opt/venv/bin/activate && \
     /opt/venv/bin/pip install --upgrade pip && \
-    /opt/venv/bin/pip install -r requirements.txt
+    /opt/venv/bin/pip install -r requirements.txt && \
+    rm -rf ~/.cache/pip
 
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Копируем JAR-файл и Python-скрипты
+# Копируем необходимые артефакты
 COPY src/main/python/forecast.py /app/scripts/forecast.py
 COPY --from=build /app/target/*.jar app.jar
 
-# Запуск Spring Boot-приложения
 CMD ["java", "-jar", "app.jar"]

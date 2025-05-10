@@ -1,0 +1,6 @@
+target/
+.git
+*.md
+*.log
+node_modules/
+__pycache__/
