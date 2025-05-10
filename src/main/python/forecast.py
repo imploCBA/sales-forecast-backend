@@ -9,6 +9,8 @@ from tensorflow.keras.layers import LSTM, Dense, Dropout
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from keras.callbacks import EarlyStopping
 from scipy.optimize import minimize
+import traceback
+import sys
 
 def parse_quarter(quarter_str):
     quarter, year = quarter_str.strip().split()
@@ -23,7 +25,6 @@ def main():
     parser.add_argument('--forecast-steps', type=int, required=True)
     args = parser.parse_args()
 
-    # Загрузка и обработка данных
     df = pd.read_csv(args.csv)
     df['Период'] = df['Период'].apply(parse_quarter)
     df['Year'] = df['Период'].dt.year
@@ -38,7 +39,6 @@ def main():
     scaler = MinMaxScaler()
     features_scaled = scaler.fit_transform(features)
 
-    # Параметры модели
     n_steps = 8
     n_outputs = args.forecast_steps
 
@@ -57,12 +57,10 @@ def main():
     early_stop = EarlyStopping(patience=20, restore_best_weights=True)
     model.fit(X, y, epochs=200, verbose=0, callbacks=[early_stop])
 
-    # Прогноз
     X_input = features_scaled[-n_steps:]
     X_input = np.expand_dims(X_input, axis=0)
     pred_scaled = model.predict(X_input)
-    
-    # Информация для нормализации
+
     future_years = np.array([args.train_end + i // 4 for i in range(n_outputs)])
     future_quarters = np.array([((i % 4) + 1) for i in range(n_outputs)])
     year_norm = (future_years - df['Year'].min()) / (df['Year'].max() - df['Year'].min())
@@ -70,12 +68,10 @@ def main():
     inverse_features = np.stack([pred_scaled[0], year_norm, quarter_norm], axis=1)
     base_pred = scaler.inverse_transform(inverse_features)[:, 0]
 
-    # Сезонная коррекция
     df_train = df[df['Year'] < args.train_end]
     season_avg_train = df_train.groupby('Quarter')['Выручка (млрд)'].mean().sort_index().values
     season_pred = np.tile(season_avg_train, int(np.ceil(n_outputs / 4)))[:n_outputs].reshape(-1, 1)
 
-    # Используем предыдущий год (если есть) для оптимизации
     df_val = df[df['Year'] == args.train_end]
     if len(df_val) >= n_outputs:
         real_val = df_val.sort_values('Quarter')['Выручка (млрд)'].values[:n_outputs]
@@ -105,4 +101,8 @@ def main():
     print(json.dumps(output, ensure_ascii=False))
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception:
+        traceback.print_exc(file=sys.stdout)
+        sys.exit(1)
